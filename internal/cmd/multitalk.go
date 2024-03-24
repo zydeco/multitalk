@@ -40,6 +40,7 @@ import (
 	"github.com/sfiera/multitalk/internal/raw"
 	"github.com/sfiera/multitalk/internal/serial"
 	"github.com/sfiera/multitalk/internal/tcp"
+	"github.com/sfiera/multitalk/internal/tcp/lt"
 	"github.com/sfiera/multitalk/internal/udp"
 	"github.com/sfiera/multitalk/pkg/ddp"
 )
@@ -49,14 +50,16 @@ const (
 )
 
 var (
-	ether   = pflag.StringArrayP("ethertalk", "e", []string{}, "interface to bridge via EtherTalk")
-	multi   = pflag.StringArrayP("multicast", "m", []string{}, "interface to bridge via UDP multicast")
-	tash    = pflag.StringArrayP("serial", "s", []string{}, "serial device to bridge via TashTalk")
-	client  = pflag.StringArrayP("tcp-client", "t", []string{}, "address to dial via TCP")
-	server  = pflag.StringArrayP("tcp-server", "T", []string{}, "address to listen via TCP")
-	network = pflag.Uint16P("network", "n", 0xff00, "network number for LToU bridging")
-	debug   = pflag.BoolP("debug", "d", false, "log packets")
-	version = pflag.BoolP("version", "v", false, "Display version & exit")
+	ether    = pflag.StringArrayP("ethertalk", "e", []string{}, "interface to bridge via EtherTalk")
+	multi    = pflag.StringArrayP("multicast", "m", []string{}, "interface to bridge via UDP multicast")
+	tash     = pflag.StringArrayP("serial", "s", []string{}, "serial device to bridge via TashTalk")
+	client   = pflag.StringArrayP("tcp-client", "t", []string{}, "address to dial via TCP")
+	server   = pflag.StringArrayP("tcp-server", "T", []string{}, "address to listen via TCP")
+	ltclient = pflag.StringArrayP("tcp-localtalk-client", "l", []string{}, "address to dial via TCP")
+	ltserver = pflag.StringArrayP("tcp-localtalk-server", "L", []string{}, "address to listen via TCP")
+	network  = pflag.Uint16P("network", "n", 0xff00, "network number for LToU bridging")
+	debug    = pflag.BoolP("debug", "d", false, "log packets")
+	version  = pflag.BoolP("version", "v", false, "Display version & exit")
 )
 
 func Main() {
@@ -85,7 +88,7 @@ func Main() {
 }
 
 func bridges(ctx context.Context, log *zap.Logger, grp *bridge.Group) error {
-	niface := len(*client) + len(*server) + len(*ether) + len(*multi) + len(*tash)
+	niface := len(*client) + len(*server) + len(*ether) + len(*multi) + len(*tash) + len(*ltserver) + len(*ltclient)
 	if niface == 0 {
 		return fmt.Errorf("no interfaces specified")
 	} else if (niface == 1) && (len(*server) == 0) && !*debug {
@@ -126,6 +129,22 @@ func bridges(ctx context.Context, log *zap.Logger, grp *bridge.Group) error {
 
 	for _, s := range *server {
 		tcp, err := tcp.TCPServer(s)
+		if err != nil {
+			return err
+		}
+		tcp.Serve(ctx, log, grp)
+	}
+
+	for _, s := range *ltclient {
+		tcp, err := lt.TCPClient(s)
+		if err != nil {
+			return err
+		}
+		grp.Add(bridge.Extend(tcp, ddp.Network(*network), nil).Start(ctx, log))
+	}
+
+	for _, s := range *ltserver {
+		tcp, err := lt.TCPServer(s, *network)
 		if err != nil {
 			return err
 		}

@@ -5,6 +5,7 @@ MultiTalk is a repeater for different transports for [AppleTalk][appletalk]:
 * [LocalTalk-over-UDP][ltou] (LToU) multicast, spoken by [Mini vMac][minivmac] 37+
 * TCP, spoken between multitalk instances or bbraun’s `kwai` server
 * [TashTalk][tashtalk], spoken by TashTalk-programmed PICs over serial
+* LocalTalk over TCP, spoken between multitalk instances or [Mini vMac for iOS][minivmac4ios]
 
 [![Build Status](https://github.com/sfiera/multitalk/actions/workflows/ci.yaml/badge.svg)](https://github.com/sfiera/multitalk/actions/workflows/ci.yaml) [![Go Reference](https://pkg.go.dev/badge/github.com/sfiera/multitalk/pkg.svg)](https://pkg.go.dev/github.com/sfiera/multitalk/pkg)
 
@@ -35,6 +36,7 @@ See [AUTHORS](AUTHORS). Notable contributions:
 [appletalk]: https://en.wikipedia.org/wiki/AppleTalk
 [ltou]: https://windswept.home.blog/2019/12/10/localtalk-over-udp/
 [minivmac]: https://www.gryphel.com/c/minivmac/
+[minivmac4ios]: https://github.com/zydeco/minivmac4ios/
 [netatalk]: https://github.com/Netatalk/Netatalk
 [tashtalk]: https://github.com/lampmerchant/tashtalk/blob/main/documentation/protocol.md
 
